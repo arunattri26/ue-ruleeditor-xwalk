@@ -115,7 +115,7 @@ function enableRuleEditorExtension() {
   const head = document.getElementsByTagName('head')[0];
   const meta = document.createElement('meta');
   meta.name = 'urn:adobe:aue:config:extensions';
-  meta.content = 'https://283250-452aquachinchilla-stage.adobeio-static.net';
+  meta.content = 'https://283250-aattriformsueextnsn-stage.adobeio-static.net';
   head.appendChild(meta);
 }
 
