@@ -117,7 +117,6 @@ function enableRuleEditorExtension() {
   meta.name = 'urn:adobe:aue:config:extensions';
   meta.content = 'https://283250-aattriformsueextnsn-stage.adobeio-static.net';
   head.appendChild(meta);
-  sessionStorage.removeItem('ruleEditorExtensionCache');
 }
 
 function cleanUp(content) {
