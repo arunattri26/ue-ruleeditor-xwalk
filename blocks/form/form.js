@@ -426,13 +426,24 @@ function cleanUp(content) {
   return formDef?.replace(/\x83\n|\n|\s\s+/g, '');
 }
 
+
+function decode(rawContent) {
+  const content = rawContent.trim();
+  if (content.startsWith('"') && content.endsWith('"')) {
+    // In the new 'jsonString' context, Server side code comes as a string with escaped characters,
+    // hence the double parse
+    return JSON.parse(JSON.parse(content));
+  }
+  return JSON.parse(cleanUp(content));
+}
+
 function extractFormDefinition(block) {
   let formDef;
   const container = block.querySelector('pre');
   const codeEl = container?.querySelector('code');
   const content = codeEl?.textContent;
   if (content) {
-    formDef = JSON.parse(cleanUp(content));
+    formDef = decode(content);
   }
   return { container, formDef };
 }
