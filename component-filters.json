@@ -28,7 +28,8 @@
       "hero",
       "cards",
       "columns",
-      "form"
+      "form",
+      "form-embed"
     ]
   },
   {
@@ -40,18 +41,22 @@
   {
     "id": "form",
     "components": [
-      "plain-text",
-      "text-input",
-      "number-input",
-      "date-input",
-      "panel",
       "checkbox",
+      "date-input",
       "drop-down",
-      "radio-group",
       "email",
-      "fragment",
+      "file-input",
       "form-button",
-      "form-image"
+      "form-fragment",
+      "form-image",
+      "form-reset-button",
+      "form-submit-button",
+      "number-input",
+      "panel",
+      "plain-text",
+      "radio-group",
+      "text-input",
+      "wizard"
     ]
   }
 ]

@@ -1,3 +1,22 @@
+/** ***********************************************************************
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ * Copyright 2024 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+
+ * Adobe permits you to use and modify this file solely in accordance with
+ * the terms of the Adobe license agreement accompanying it.
+ ************************************************************************ */
 import { submitSuccess, submitFailure } from '../submit.js';
 import {
   createHelpText, createLabel, updateOrCreateInvalidMsg, getCheckboxGroupValue,
@@ -16,9 +35,18 @@ function compare(fieldVal, htmlVal, type) {
     return fieldVal === Number(htmlVal);
   }
   if (type === 'boolean') {
-    return fieldVal.toString() === htmlVal;
+    return fieldVal?.toString() === htmlVal;
   }
   return fieldVal === htmlVal;
+}
+
+function handleActiveChild(id, form) {
+  form.querySelectorAll('[data-active="true"]').forEach((ele) => ele.removeAttribute('data-active'));
+  const field = form.querySelector(`#${id}`);
+  if (field) {
+    field.closest('.field-wrapper').dataset.active = true;
+    field.focus();
+  }
 }
 
 async function fieldChanged(payload, form, generateFormRendition) {
@@ -26,6 +54,7 @@ async function fieldChanged(payload, form, generateFormRendition) {
   changes.forEach((change) => {
     const {
       id, fieldType, readOnly, type, displayValue, displayFormat, displayValueExpression,
+      activeChild,
     } = fieldModel;
     const { propertyName, currentValue, prevValue } = change;
     const field = form.querySelector(`#${id}`);
@@ -41,9 +70,13 @@ async function fieldChanged(payload, form, generateFormRendition) {
         }
         break;
       case 'validationMessage':
-        if (field.setCustomValidity && payload.field.expressionMismatch) {
-          field.setCustomValidity(currentValue);
-          updateOrCreateInvalidMsg(field, currentValue);
+        {
+          const { validity } = payload.field;
+          if (field.setCustomValidity
+          && (validity?.expressionMismatch || validity?.customConstraint)) {
+            field.setCustomValidity(currentValue);
+            updateOrCreateInvalidMsg(field, currentValue);
+          }
         }
         break;
       case 'value':
@@ -59,6 +92,8 @@ async function fieldChanged(payload, form, generateFormRendition) {
           });
         } else if (fieldType === 'checkbox') {
           field.checked = compare(currentValue, field.value, type);
+        } else if (fieldType === 'plain-text') {
+          field.innerHTML = currentValue;
         } else if (field.type !== 'file') {
           field.value = currentValue;
         }
@@ -136,6 +171,26 @@ async function fieldChanged(payload, form, generateFormRendition) {
           generateFormRendition({ items: [currentValue] }, field?.querySelector('.repeat-wrapper'));
         }
         break;
+      case 'activeChild': handleActiveChild(activeChild, form);
+        break;
+      case 'valid':
+        if (currentValue === true) {
+          updateOrCreateInvalidMsg(field, '');
+        }
+        break;
+      default:
+        break;
+    }
+  });
+}
+
+function formChanged(payload, form) {
+  const { changes } = payload;
+  changes.forEach((change) => {
+    const { propertyName, currentValue } = change;
+    switch (propertyName) {
+      case 'activeChild': handleActiveChild(currentValue?.id, form);
+        break;
       default:
         break;
     }
@@ -146,6 +201,8 @@ function handleRuleEngineEvent(e, form, generateFormRendition) {
   const { type, payload } = e;
   if (type === 'fieldChanged') {
     fieldChanged(payload, form, generateFormRendition);
+  } else if (type === 'change') {
+    formChanged(payload, form);
   } else if (type === 'submitSuccess') {
     submitSuccess(e, form);
   } else if (type === 'submitFailure') {
@@ -176,6 +233,15 @@ function applyRuleEngine(htmlForm, form, captcha) {
     // console.log(JSON.stringify(form.exportData(), null, 2));
   });
 
+  htmlForm.addEventListener('focusin', (e) => {
+    const field = e.target;
+    let { id } = field;
+    if (['radio', 'checkbox'].includes(field?.type)) {
+      id = field.closest('.field-wrapper').dataset.id;
+    }
+    form.getElement(id)?.focus();
+  });
+
   htmlForm.addEventListener('click', async (e) => {
     if (e.target.tagName === 'BUTTON') {
       const element = form.getElement(e.target.id);
@@ -200,6 +266,10 @@ export async function loadRuleEngine(formDef, htmlForm, captcha, genFormRenditio
   }, 'fieldChanged');
 
   form.subscribe((e) => {
+    handleRuleEngineEvent(e, htmlForm, genFormRendition);
+  }, 'change');
+
+  form.subscribe((e) => {
     handleRuleEngineEvent(e, htmlForm);
   }, 'submitSuccess');
 
@@ -219,9 +289,9 @@ async function fetchData({ id }) {
     const url = externalize(`/adobe/forms/af/data/${id}${search}`);
     const response = await fetch(url);
     const json = await response.json();
-    const { data } = json;
-    const { data: { afData: { afBoundData = {} } = {} } = {} } = json;
-    return Object.keys(afBoundData).length > 0 ? afBoundData : (data || json);
+    const { data: prefillData } = json;
+    const { data: { afData: { afBoundData: { data = {} } = {} } = {} } = {} } = json;
+    return Object.keys(data).length > 0 ? data : (prefillData || json);
   } catch (ex) {
     return null;
   }

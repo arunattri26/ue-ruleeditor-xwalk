@@ -1,16 +1,24 @@
 // create a string containing head tags from h1 to h5
+import { defaultErrorMessages } from './constant.js';
+
 const headings = Array.from({ length: 5 }, (_, i) => `<h${i + 1}>`).join('');
-const allowedTags = `${headings}<a><b><p><i><em><strong><ul><li>`;
+const allowedTags = `${headings}<a><b><p><i><em><strong><ul><li><ol>`;
 
 export function stripTags(input, allowd = allowedTags) {
+  if (typeof input !== 'string') {
+    return input;
+  }
   const allowed = ((`${allowd || ''}`)
     .toLowerCase()
     .match(/<[a-z][a-z0-9]*>/g) || [])
     .join(''); // making sure the allowed arg is a string containing only tags in lowercase (<a><b><c>)
   const tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi;
   const comments = /<!--[\s\S]*?-->/gi;
+  const nbsp = /&nbsp;/g; // nbsp: non-breaking space character
   return input.replace(comments, '')
-    .replace(tags, ($0, $1) => (allowed.indexOf(`<${$1.toLowerCase()}>`) > -1 ? $0 : ''));
+    .replace(tags, ($0, $1) => (allowed.indexOf(`<${$1.toLowerCase()}>`) > -1 ? $0 : ''))
+    .replace(nbsp, '')
+    .trim();
 }
 
 /**
@@ -18,7 +26,7 @@ export function stripTags(input, allowd = allowedTags) {
  * @param {string} name The unsanitized string
  * @returns {string} The class name
  */
-function toClassName(name) {
+export function toClassName(name) {
   return typeof name === 'string'
     ? name
       .toLowerCase()
@@ -66,8 +74,8 @@ export function createLabel(fd, tagName = 'label') {
     if (fd.label.visible === false) {
       label.dataset.visible = 'false';
     }
-    if (fd.Tooltip) {
-      label.title = fd.Tooltip;
+    if (fd.tooltip) {
+      label.title = stripTags(fd.tooltip, '');
     }
     return label;
   }
@@ -172,12 +180,12 @@ function removeInvalidMsg(fieldElement) {
 }
 
 export const validityKeyMsgMap = {
-  patternMismatch: 'patternErrorMessage',
-  rangeOverflow: 'maximumErrorMessage',
-  rangeUnderflow: 'minimumErrorMessage',
-  tooLong: 'maxLengthErrorMessage',
-  tooShort: 'minLengthErrorMessage',
-  valueMissing: 'requiredErrorMessage',
+  patternMismatch: { key: 'pattern', attribute: 'type' },
+  rangeOverflow: { key: 'maximum', attribute: 'max' },
+  rangeUnderflow: { key: 'minimum', attribute: 'min' },
+  tooLong: { key: 'maxLength', attribute: 'maxlength' },
+  tooShort: { key: 'minLength', attribute: 'minlength' },
+  valueMissing: { key: 'required' },
 };
 
 export function getCheckboxGroupValue(name, htmlForm) {
@@ -202,6 +210,14 @@ function updateRequiredCheckboxGroup(name, htmlForm) {
   });
 }
 
+function getValidationMessage(fieldElement, wrapper) {
+  const [invalidProperty] = Object.keys(validityKeyMsgMap)
+    .filter((state) => fieldElement.validity[state]);
+  const { key, attribute } = validityKeyMsgMap[invalidProperty] || {};
+  const message = wrapper.dataset[`${key}ErrorMessage`] || (attribute ? defaultErrorMessages[key].replace(/\$0/, fieldElement.getAttribute(attribute)) : defaultErrorMessages[key]);
+  return message || fieldElement.validationMessage;
+}
+
 export function checkValidation(fieldElement) {
   const wrapper = fieldElement.closest('.field-wrapper');
   const isCheckboxGroup = fieldElement.dataset.fieldType === 'checkbox-group';
@@ -214,10 +230,6 @@ export function checkValidation(fieldElement) {
     return;
   }
 
-  const [invalidProperty] = Object.keys(validityKeyMsgMap)
-    .filter((state) => fieldElement.validity[state]);
-
-  const message = wrapper.dataset[validityKeyMsgMap[invalidProperty]]
-  || fieldElement.validationMessage;
+  const message = getValidationMessage(fieldElement, wrapper);
   updateOrCreateInvalidMsg(fieldElement, message);
 }
