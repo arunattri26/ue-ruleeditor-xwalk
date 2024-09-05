@@ -227,7 +227,7 @@ function enableRuleEditorExtension() {
   meta.name = 'urn:adobe:aue:config:extensions';
   // meta.content = 'https://283250-aattriformsueextnsn-stage.adobeio-static.net';
   // meta.content = 'https://283250-aattriformsueextnsn-stage.dev.runtime.adobe.io';
-  meta.content = 'https://experience-stage.adobe.com/solutions/livecycle-ruleeditor-ui-service/static-assets/resources/universal_editor.html?livecycle-ruleeditor-ui-service_version=PR-45-f0dc85ffe4ba286d9dd597df149cbb4d50bd6dd1';
+  meta.content = 'https://experience-stage.adobe.com/solutions/livecycle-ruleeditor-ui-service/static-assets/resources/universal_editor.html?livecycle-ruleeditor-ui-service_version=PR-45-aba126b934a699823d9f5da5fba0edd4d1483fa6';
   // meta.content = 'https://author-p63964-e255534-cmstg.adobeaemcloud.com/ui/solutions/livecycle-ruleeditor-ui-service/static-assets/resources/universal_editor.html?livecycle-ruleeditor-ui-service_version=PR-43-5f1d9a71a541a111d2dba64b845beadd996bee2e';
   head.appendChild(meta);
 }
