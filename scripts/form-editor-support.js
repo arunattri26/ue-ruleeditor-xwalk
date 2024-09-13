@@ -227,13 +227,14 @@ function enableRuleEditorExtension() {
   meta.name = 'urn:adobe:aue:config:extensions';
   // meta.content = 'https://283250-aattriformsueextnsn-stage.adobeio-static.net';
   // meta.content = 'https://283250-aattriformsueextnsn-stage.dev.runtime.adobe.io';
-  const params = new URLSearchParams(window.location.search);
-  const version = params.get('livecycle-ruleeditor-ui-service_version');
-  if (version) {
-    meta.content = `https://experience.adobe.com/solutions/livecycle-ruleeditor-ui-service/static-assets/universal_editor.html?livecycle-ruleeditor-ui-service_version=${version}`;
-  } else {
-    meta.content = `https://experience.adobe.com/solutions/livecycle-ruleeditor-ui-service/static-assets/universal_editor.html`;
-  }
+  // const params = new URLSearchParams(window.location.search);
+  // const version = params.get('livecycle-ruleeditor-ui-service_version');
+  // if (version) {
+  //   meta.content = `https://experience.adobe.com/solutions/livecycle-ruleeditor-ui-service/static-assets/universal_editor.html?livecycle-ruleeditor-ui-service_version=${version}`;
+  // } else {
+  //   meta.content = `https://experience.adobe.com/solutions/livecycle-ruleeditor-ui-service/static-assets/universal_editor.html`;
+  // }
+  meta.content = `https://experience.adobe.com/solutions/livecycle-ruleeditor-ui-service/static-assets/universal_editor.html?livecycle-ruleeditor-ui-service_version=PR-83-8a3cafc95acfaf2d8d55e0c4cb4fd3d85e23a5e5`;
   head.appendChild(meta);
 }
 
