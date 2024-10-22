@@ -243,7 +243,7 @@ function enableRuleEditorExtension() {
   // console.log('Rule editor extension Params: ', params);
   // const version = params.get('livecycle-ruleeditor-ui-service_version');
   const params = new URLSearchParams(window.location.hash.substring(1)); // Remove the leading '#' character
-  console.log('Rule editor extension Params: ', hash);
+  console.log('Rule editor extension Params: ', params);
   const version = params.get('livecycle-ruleeditor-ui-service_version');
   if (version) {
     meta.content = `https://experience-qa.adobe.com/solutions/livecycle-ruleeditor-ui-service/static-assets/resources/universal_editor.html?livecycle-ruleeditor-ui-service_version=${version}`;
